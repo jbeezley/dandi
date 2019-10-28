@@ -24,7 +24,7 @@ class Dataset(models.Model):
 
     genotype = models.CharField(max_length=MAX_CHAR_LENGTH, null=True)
     subject_id = models.CharField(max_length=MAX_CHAR_LENGTH, null=True)
-    age_in_days = models.FloatField(null=True)
+    age = models.DurationField(null=True)
     number_of_electrodes = models.IntegerField(null=True)
     lab = models.CharField(max_length=MAX_CHAR_LENGTH, null=True)
     session_start_time = models.DateField(null=True)
