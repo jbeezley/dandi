@@ -1,3 +1,5 @@
 django
+django-filter
 djangorestframework
+factory-boy
 psycopg2-binary

@@ -1,13 +1,26 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
+from .filters import DatasetFilter
 from .models import Dataset, Publication
 from .serializers import DatasetSerializer
 
 
+class DatasetPagination(PageNumberPagination):
+    page_size = 25
+    max_page_size = 100
+    page_size_query_param = 'page_size'
+
+
 class DatasetViewSet(viewsets.ModelViewSet):
-    queryset = Dataset.objects.all()
+    queryset = Dataset.objects.all().order_by('created')
     serializer_class = DatasetSerializer
+    pagination_class = DatasetPagination
+    filter_backends = (DjangoFilterBackend,)
+    # filter_fields = ('genotype',)
+    filterset_class = DatasetFilter
 
     def create(self, request, *args, **kwargs):
         data = request.data
