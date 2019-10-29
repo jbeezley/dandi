@@ -12,11 +12,21 @@ class Publication(models.Model):
         return self.doi
 
 
+class Keyword(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    keyword = models.CharField(max_length=63, unique=True)
+
+    def __str__(self):
+        return self.keyword
+
+
 class Dataset(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     related_publications = models.ManyToManyField(Publication)
+    keywords = models.ManyToManyField(Keyword)
 
     # replace with a FileField
     path = models.CharField(max_length=MAX_CHAR_LENGTH)

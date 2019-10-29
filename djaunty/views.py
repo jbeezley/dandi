@@ -4,7 +4,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from .filters import DatasetFilter
-from .models import Dataset, Publication
+from .models import Dataset, Keyword, Publication
 from .serializers import DatasetSerializer
 
 
@@ -25,6 +25,8 @@ class DatasetViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         data = request.data
         publications_data = data.pop('related_publications', [])
+        keywords_data = data.pop('keywords', [])
+
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
 
@@ -33,6 +35,12 @@ class DatasetViewSet(viewsets.ModelViewSet):
             dataset.related_publications.add(
                 Publication.objects.get_or_create(doi=doi, defaults={'dataset': dataset})[0]
             )
+
+        for keyword in keywords_data:
+            dataset.keywords.add(
+                Keyword.objects.get_or_create(keyword=keyword, defaults={'dataset': dataset})[0]
+            )
+
         dataset.save()  # necessary?
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -45,6 +53,10 @@ class DatasetViewSet(viewsets.ModelViewSet):
         if not partial and publications_data is None:
             publications_data = []
 
+        keywords_data = data.pop('keywords', None)
+        if not partial and keywords_data is None:
+            keywords_data = []
+
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
@@ -56,6 +68,15 @@ class DatasetViewSet(viewsets.ModelViewSet):
                 instance.related_publications.add(
                     Publication.objects.get_or_create(doi=doi, defaults={'dataset': instance})[0]
                 )
+
+        if keywords_data is not None:
+            instance.keywords.clear()
+
+            for keyword in keywords_data:
+                instance.keywords.add(
+                    Keyword.objects.get_or_create(keyword=keyword, defaults={'dataset': instance})[0]
+                )
+
         serializer.save()
 
         if getattr(instance, '_prefetched_objects_cache', None):

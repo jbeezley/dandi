@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Dataset, Publication
+from .models import Dataset
 
 
 class AgeField(serializers.DurationField):
@@ -8,14 +8,11 @@ class AgeField(serializers.DurationField):
         return super().to_internal_value(data.replace('days ', ''))
 
 
-class PublicationSerializer(serializers.ModelSerializer):
-    model = Publication
-    fields = '__all__'
-
-
 class DatasetSerializer(serializers.ModelSerializer):
     related_publications = serializers.SlugRelatedField(
         many=True, slug_field='doi', read_only=True)
+    keywords = serializers.SlugRelatedField(
+        many=True, slug_field='keyword', read_only=True)
 
     age = AgeField(required=False)
 
