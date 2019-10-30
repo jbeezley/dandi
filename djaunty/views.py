@@ -1,10 +1,15 @@
 from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import ParseError
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.parsers import BaseParser
 from rest_framework.response import Response
 
 from .filters import DatasetFilter
 from .models import Dataset, Keyword, Publication
+from .search_parser import ParserException, SearchParser
 from .serializers import DatasetSerializer
 
 
@@ -12,6 +17,18 @@ class DatasetPagination(PageNumberPagination):
     page_size = 25
     max_page_size = 100
     page_size_query_param = 'page_size'
+
+
+class SearchStringParser(BaseParser):
+    media_type = 'text/plain'
+    search_parser = SearchParser()
+
+    def parse(self, stream, media_type=None, parser_context=None):
+        text = stream.read().decode()
+        try:
+            return self.search_parser.parse(text)
+        except ParserException as e:
+            raise ParseError(str(e))
 
 
 class DatasetViewSet(viewsets.ModelViewSet):
@@ -84,4 +101,15 @@ class DatasetViewSet(viewsets.ModelViewSet):
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['POST'], schema=None, parser_classes=[SearchStringParser])
+    def search(self, request, *args, **kwargs):
+        queryset = Dataset.objects.filter(self.request.data)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

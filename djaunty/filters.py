@@ -1,18 +1,16 @@
 from django_filters import rest_framework as filters
 
-from .models import Dataset, Publication
+from .models import Dataset, Keyword, Publication
 
 
 class DatasetFilter(filters.FilterSet):
     related_publications = filters.ModelChoiceFilter(queryset=Publication.objects.all())
+    keywords = filters.ModelChoiceFilter(queryset=Keyword.objects.all())
 
     class Meta:
         model = Dataset
-        fields = {
-            'genotype': ['exact', 'contains'],
-        }
-
-        _tmp = [
+        fields = [
+            'genotype',
             'subject_id',
             'age',
             'number_of_electrodes',

@@ -5,6 +5,10 @@ from django.db.models import Q
 from ply import lex, yacc
 
 
+class ParserException(Exception):
+    pass
+
+
 class SearchParser:
     attributes = [
         'keyword',
@@ -97,7 +101,7 @@ class SearchParser:
         return t
 
     def t_error(self, t):
-        raise Exception(
+        raise ParserException(
             f'Error tokenizing "{t.value}" at line {t.lineno}, position {t.lexpos}'
         )
 
@@ -183,6 +187,6 @@ class SearchParser:
         p[0] = p[1]
 
     def p_error(self, p):
-        raise Exception(
+        raise ParserException(
             f'parsing error: "{p.value}" at line {p.lineno}, position {p.lexpos}'
         )
