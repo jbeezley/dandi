@@ -61,7 +61,7 @@ class DatasetFactory(DjangoModelFactory):
     class Params:
         null_ratio = 0.1
 
-    path = Faker('file_path', depth=3)
+    path = Faker('file_path', depth=3, extension='nwb')
     size = Faker('random_int', max=1e9)
 
     genotype = Optional(Faker('word'))
