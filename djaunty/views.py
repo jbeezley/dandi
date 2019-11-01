@@ -105,6 +105,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['POST'], schema=None, parser_classes=[SearchStringParser])
     def search(self, request, *args, **kwargs):
+        # TODO: add sort parameters
         queryset = Dataset.objects.filter(self.request.data)
         page = self.paginate_queryset(queryset)
         if page is not None:

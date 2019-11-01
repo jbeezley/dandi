@@ -61,13 +61,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         batch_size = options['batch_size']
 
-        publications = []
+        publications = [p.pk for p in Publication.objects.all()]
         for batch in batch_create(
                 PublicationFactory, Publication, batch_size,
                 options['publication_count'], 'Generating publications'):
             publications.extend([p.pk for p in batch])
 
-        keywords = []
+        keywords = [k.pk for k in Keyword.objects.all()]
         for batch in batch_create(
                 KeywordFactory, Keyword, batch_size,
                 options['keyword_count'], 'Generating keywords'):
