@@ -1,3 +1,5 @@
+from django.db.models import Count
+
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import status, viewsets
@@ -9,8 +11,10 @@ from rest_framework.response import Response
 
 from .filters import DatasetFilter
 from .models import Dataset, Keyword, Publication
-from .search_parser import ParserException, SearchParser
+from .search_parser import FacetParser, ParserException, SearchParser
 from .serializers import DatasetSerializer
+
+facet_parser = FacetParser()
 
 
 class DatasetPagination(PageNumberPagination):
@@ -103,14 +107,25 @@ class DatasetViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=False, methods=['POST'], schema=None, parser_classes=[SearchStringParser])
+    @action(detail=False, methods=['POST'], parser_classes=[SearchStringParser])
     def search(self, request, *args, **kwargs):
         # TODO: add sort parameters
         queryset = Dataset.objects.filter(self.request.data)
         page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+    @action(detail=False, methods=['POST'], schema=None, parser_classes=[SearchStringParser])
+    def distinct(self, request, *args, **kwargs):
+        if 'column' not in request.query_params:
+            return Response('column query argument is required', 400)
+
+        try:
+            column = facet_parser.parse(request.query_params['column'])
+        except ParserException:
+            return Response('Invalid column argument', 400)
+
+        qs = Dataset.objects.filter(self.request.data).annotate(facet=column)
+        values = qs.values('facet').annotate(count=Count('facet')).order_by('-count')
+        page = self.paginate_queryset(values)
+        return self.get_paginated_response(page)

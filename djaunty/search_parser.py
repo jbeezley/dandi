@@ -1,6 +1,6 @@
 import re
 
-from django.db.models import Q
+from django.db.models import F, Q
 
 from ply import lex, yacc
 
@@ -9,7 +9,7 @@ class ParserException(Exception):
     pass
 
 
-class SearchParser:
+class BaseParser:
     attributes = [
         'keyword',
         'lab',
@@ -20,6 +20,46 @@ class SearchParser:
         'electrodes'
     ]
 
+    t_ignore_WHITESPACE = r'\s+'
+    t_ignore_COMMENT = r'\#.*'
+
+    def __init__(self, **kwargs):
+        self.lexer = lex.lex(module=self, reflags=re.IGNORECASE)
+        self.parser = yacc.yacc(module=self, write_tables=False, debug=False)
+
+    def tokenize(self, text):
+        self.lexer.input(text)
+        while True:
+            token = self.lexer.token()
+            if not token:
+                break
+            print(token)
+
+    def parse(self, text):
+        return self.parser.parse(text, lexer=self.lexer)
+
+    @lex.TOKEN('(' + ')|('.join(attributes) + ')')
+    def t_ATTRIBUTE(self, t):
+        if t.value == 'doi':
+            t.value = 'related_publications__doi'
+        elif t.value == 'keyword':
+            t.value = 'keywords__keyword'
+        elif t.value == 'electrodes':
+            t.value = 'number_of_electrodes'
+        return t
+
+    def t_error(self, t):
+        raise ParserException(
+            f'Error tokenizing "{t.value}" at line {t.lineno}, position {t.lexpos}'
+        )
+
+    def p_error(self, p):
+        raise ParserException(
+            f'parsing error: "{p.value}" at line {p.lineno}, position {p.lexpos}'
+        )
+
+
+class SearchParser(BaseParser):
     binary_operators = {
         r'=': 'EQUAL',
         r'!=': 'NOTEQUAL',
@@ -48,9 +88,6 @@ class SearchParser:
 
     t_NOT = r'not'
 
-    t_ignore_WHITESPACE = r'\s+'
-    t_ignore_COMMENT = r'\#.*'
-
     # for the parser
     precedence = [
         ('left', 'OR'),
@@ -58,21 +95,6 @@ class SearchParser:
         ('right', 'NOT'),
         ('right', 'IN')
     ]
-
-    def __init__(self, **kwargs):
-        self.lexer = lex.lex(module=self, reflags=re.IGNORECASE)
-        self.parser = yacc.yacc(module=self, write_tables=False, debug=False)
-
-    def tokenize(self, text):
-        self.lexer.input(text)
-        while True:
-            token = self.lexer.token()
-            if not token:
-                break
-            print(token)
-
-    def parse(self, text):
-        return self.parser.parse(text, lexer=self.lexer)
 
     def t_STRING(self, t):
         r"""("[^"]*")|('[^']*')"""  # '...' or "..."
@@ -91,26 +113,15 @@ class SearchParser:
         t.type = self.binary_operators[value]
         return t
 
-    @lex.TOKEN('(' + ')|('.join(attributes) + ')')
-    def t_ATTRIBUTE(self, t):
-        if t.value == 'doi':
-            t.value = 'related_publications__doi'
-        elif t.value == 'keyword':
-            t.value = 'keywords__keyword'
-        elif t.value == 'electrodes':
-            t.value = 'number_of_electrodes'
-        return t
-
-    def t_error(self, t):
-        raise ParserException(
-            f'Error tokenizing "{t.value}" at line {t.lineno}, position {t.lexpos}'
-        )
-
     # Parser rules
 
     def p_filter(self, p):
         'filter : expression'
         p[0] = p[1]
+
+    def p_empty_expression(self, p):
+        'expression :'
+        p[0] = Q()
 
     def p_expression_rule(self, p):
         'expression : rule'
@@ -190,7 +201,12 @@ class SearchParser:
         '''
         p[0] = p[1]
 
-    def p_error(self, p):
-        raise ParserException(
-            f'parsing error: "{p.value}" at line {p.lineno}, position {p.lexpos}'
-        )
+
+class FacetParser(BaseParser):
+    tokens = [
+        'ATTRIBUTE'
+    ]
+
+    def p_facet(self, p):
+        'facet : ATTRIBUTE'
+        p[0] = F(p[1])
