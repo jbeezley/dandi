@@ -29,7 +29,8 @@ class SearchParser:
         r'\<': 'LESS',
         r'in': 'IN',
         r'and': 'AND',
-        r'or': 'OR'
+        r'or': 'OR',
+        r'~=': 'LIKE'
     }
 
     literals = ['[', ']', '(', ')', ',']
@@ -142,6 +143,7 @@ class SearchParser:
                 | ATTRIBUTE GREATER INTEGER
                 | ATTRIBUTE LESSEQUAL INTEGER
                 | ATTRIBUTE LESS INTEGER
+                | ATTRIBUTE LIKE STRING
         '''
         key = p[1]
         op = p[2]
@@ -156,6 +158,8 @@ class SearchParser:
             key = key + '__gt'
         elif op == '>=':
             key = key + '__gte'
+        elif op == '~=':
+            key = key + '__icontains'
 
         kwargs = dict([(key, value)])
         q = Q(**kwargs)
