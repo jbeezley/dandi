@@ -25,8 +25,9 @@ SECRET_KEY = '0zns04s$=)rj-cewdv5zc30-e2$+9*^xp$$$np&3&juhni7zy@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['garant', 'localhost', '127.0.0.1']
 
+INTERNAL_IPS = ['127.0.0.1']
 
 # Application definition
 
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     'django_filters',
     'djaunty',
     'rest_framework',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'dandi.urls'
