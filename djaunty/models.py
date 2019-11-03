@@ -1,3 +1,4 @@
+from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 
@@ -49,3 +50,6 @@ class Dataset(models.Model):
     nwb_version = models.CharField(max_length=MAX_CHAR_LENGTH, null=True)
 
     search_vector = SearchVectorField(null=True, editable=False)
+
+    class Meta:
+        indexes = [GinIndex(fields=['search_vector'])]
