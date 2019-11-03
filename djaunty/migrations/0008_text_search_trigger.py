@@ -40,7 +40,6 @@ class Migration(migrations.Migration):
                 to_tsvector(coalesce(keywords, '')) ||
                 to_tsvector(coalesce(publications, ''));
 
-            raise notice '%', NEW.search_vector;
             return NEW;
         end
         $$ LANGUAGE plpgsql;
