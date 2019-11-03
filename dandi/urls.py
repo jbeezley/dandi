@@ -18,7 +18,7 @@ import debug_toolbar
 from django.contrib import admin
 from django.urls import include, path
 
-from djaunty.views import DatasetViewSet
+from djaunty.api import DatasetViewSet
 
 from rest_framework import routers
 
