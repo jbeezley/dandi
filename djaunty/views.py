@@ -30,7 +30,7 @@ class PlainTextParser(BaseParser):
         return stream.read().decode()
 
 
-class SearchStringParser(BaseParser):
+class SearchStringParser(PlainTextParser):
     search_parser = SearchParser()
 
     def parse(self, stream, media_type=None, parser_context=None):
