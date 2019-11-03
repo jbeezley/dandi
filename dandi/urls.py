@@ -28,6 +28,6 @@ router.register('datasets', DatasetViewSet)
 
 urlpatterns = [
     path('__debug__', include(debug_toolbar.urls)),
-    path('', include(router.urls)),
+    path('api/', include(router.urls)),
     path('admin/', admin.site.urls),
 ]
