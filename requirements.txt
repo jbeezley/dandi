@@ -5,4 +5,5 @@ factory-boy
 faker
 ply
 psycopg2-binary
+pygments
 tqdm
