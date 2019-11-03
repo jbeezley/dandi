@@ -18,4 +18,4 @@ class DatasetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Dataset
-        fields = '__all__'
+        exclude = ['search_vector']
