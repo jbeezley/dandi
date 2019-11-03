@@ -1,3 +1,4 @@
+from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 
 MAX_CHAR_LENGTH = 255
@@ -46,3 +47,5 @@ class Dataset(models.Model):
     institution = models.CharField(max_length=MAX_CHAR_LENGTH, null=True)
     number_of_units = models.IntegerField(null=True)
     nwb_version = models.CharField(max_length=MAX_CHAR_LENGTH, null=True)
+
+    search_vector = SearchVectorField(null=True, editable=False)
