@@ -27,8 +27,8 @@ class Dataset(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
-    related_publications = models.ManyToManyField(Publication)
-    keywords = models.ManyToManyField(Keyword)
+    related_publications = models.ManyToManyField(Publication, related_name='datasets')
+    keywords = models.ManyToManyField(Keyword, related_name='datasets')
 
     # replace with a FileField
     path = models.CharField(max_length=MAX_CHAR_LENGTH)

@@ -23,12 +23,18 @@ class DatasetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
 
 
-class SearchStringParser(BaseParser):
+class PlainTextParser(BaseParser):
     media_type = 'text/plain'
+
+    def parse(self, stream, media_type=None, parser_context=None):
+        return stream.read().decode()
+
+
+class SearchStringParser(BaseParser):
     search_parser = SearchParser()
 
     def parse(self, stream, media_type=None, parser_context=None):
-        text = stream.read().decode()
+        text = super().parse(stream, media_type, parser_context)
         try:
             return self.search_parser.parse(text)
         except ParserException as e:
@@ -36,7 +42,7 @@ class SearchStringParser(BaseParser):
 
 
 class DatasetViewSet(viewsets.ModelViewSet):
-    queryset = Dataset.objects.all().order_by('created')
+    queryset = Dataset.objects.all().order_by('id')
     serializer_class = DatasetSerializer
     pagination_class = DatasetPagination
     filter_backends = (DjangoFilterBackend,)
@@ -108,7 +114,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=['POST'], parser_classes=[SearchStringParser])
-    def search(self, request, *args, **kwargs):
+    def filter(self, request, *args, **kwargs):
         # TODO: add sort parameters
         queryset = Dataset.objects.filter(self.request.data)
         page = self.paginate_queryset(queryset)
@@ -116,7 +122,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
         return self.get_paginated_response(serializer.data)
 
     @action(detail=False, methods=['POST'], schema=None, parser_classes=[SearchStringParser])
-    def distinct(self, request, *args, **kwargs):
+    def facet(self, request, *args, **kwargs):
         if 'column' not in request.query_params:
             return Response('column query argument is required', 400)
 
@@ -128,4 +134,10 @@ class DatasetViewSet(viewsets.ModelViewSet):
         qs = Dataset.objects.filter(self.request.data).annotate(facet=column)
         values = qs.values('facet').annotate(count=Count('facet')).order_by('-count')
         page = self.paginate_queryset(values)
+        return self.get_paginated_response(page)
+
+    @action(detail=False, methods=['POST'], schema=None, parser_classes=[PlainTextParser])
+    def search(self, request, *args, **kwargs):
+        qs = Dataset.objects.filter(search_vector=self.request.data)
+        page = self.paginate_queryset(qs)
         return self.get_paginated_response(page)

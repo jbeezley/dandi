@@ -4,8 +4,17 @@ from .models import Dataset, Keyword, Publication
 
 
 class DatasetFilter(filters.FilterSet):
-    related_publications = filters.ModelChoiceFilter(queryset=Publication.objects.all())
-    keywords = filters.ModelChoiceFilter(queryset=Keyword.objects.all())
+    # Limit the results sent back for the filtering form...
+    # Ideally this, but it is slow:
+    # publication_qs = Publication.objects \
+    #     .annotate(Count('datasets')).order_by('-datasets__count', 'doi')[:100]
+    publication_qs = Publication.objects.all().order_by('doi')[:100]
+    related_publications = filters.ModelChoiceFilter(queryset=publication_qs)
+
+    # keyword_qs = Keyword.objects \
+    #     .annotate(Count('datasets')).order_by('-datasets__count', 'keyword')[:100]
+    keyword_qs = Keyword.objects.all().order_by('keyword')[:100]
+    keywords = filters.ModelChoiceFilter(queryset=keyword_qs)
 
     class Meta:
         model = Dataset
@@ -24,5 +33,4 @@ class DatasetFilter(filters.FilterSet):
             'institution',
             'number_of_units',
             'nwb_version',
-            'related_publications',
         ]
