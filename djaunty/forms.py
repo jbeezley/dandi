@@ -15,5 +15,9 @@ class SearchField(forms.CharField):
         return parsed
 
 
+class SearchForm(forms.Form):
+    search_text = SearchField(label='Search', widget=forms.Textarea)
+
+
 class TextSearchForm(forms.Form):
     search_text = forms.CharField(label='Search')

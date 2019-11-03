@@ -4,7 +4,7 @@
 
 {% block content %}
     {% load pretty_json %}
-    <form action="/search/" method="post">
+    <form action="/{{ action }}/" method="post">
         {% csrf_token %}
         {{ form }}
         <input type="submit" value="Submit">
@@ -12,7 +12,8 @@
     {% if results is None %}
     <!-- no results -->
     {% elif results|length > 0 %}
-{{ results | pretty_json | safe }}
+        Found {{ total }} results:
+        {{ results | pretty_json | safe }}
     {% else %}
     <pre>
         No results found.
