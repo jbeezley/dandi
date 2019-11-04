@@ -10,9 +10,9 @@ from rest_framework.parsers import BaseParser
 from rest_framework.response import Response
 
 from .filters import DatasetFilter
-from .models import Dataset, Keyword, Publication
+from .models import DataTag, Dataset, Keyword, Publication
 from .search_parser import FacetParser, ParserException, SearchParser
-from .serializers import DatasetSerializer
+from .serializers import DataTagSerializer, DatasetSerializer
 
 facet_parser = FacetParser()
 
@@ -140,3 +140,9 @@ class DatasetViewSet(viewsets.ModelViewSet):
         qs = Dataset.objects.filter(search_vector=self.request.data)
         page = self.paginate_queryset(qs)
         return self.get_paginated_response(page)
+
+
+class DataTagViewSet(viewsets.ModelViewSet):
+    queryset = DataTag.objects.all().order_by('id')
+    serializer_class = DataTagSerializer
+    pagination_class = DatasetPagination

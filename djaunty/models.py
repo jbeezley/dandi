@@ -53,3 +53,14 @@ class Dataset(models.Model):
 
     class Meta:
         indexes = [GinIndex(fields=['search_vector'])]
+
+
+class DataTag(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    name = models.CharField(max_length=MAX_CHAR_LENGTH, unique=True)
+    datasets = models.ManyToManyField(Dataset, related_name='tags')
+
+    def __str__(self):
+        return self.name

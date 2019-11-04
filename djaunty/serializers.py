@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Dataset
+from .models import DataTag, Dataset
 
 
 class AgeField(serializers.DurationField):
@@ -19,3 +19,12 @@ class DatasetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dataset
         exclude = ['search_vector']
+
+
+class DataTagSerializer(serializers.ModelSerializer):
+    datasets = serializers.HyperlinkedRelatedField(
+        many=True, read_only=True, view_name='dataset-detail')
+
+    class Meta:
+        model = DataTag
+        fields = '__all__'

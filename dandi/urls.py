@@ -18,7 +18,7 @@ import debug_toolbar
 from django.contrib import admin
 from django.urls import include, path
 
-from djaunty.api import DatasetViewSet
+from djaunty.api import DataTagViewSet, DatasetViewSet
 from djaunty.views import dataset, search, text_search, tree
 
 from rest_framework import routers
@@ -26,6 +26,7 @@ from rest_framework import routers
 
 router = routers.DefaultRouter()
 router.register('datasets', DatasetViewSet)
+router.register('datatags', DataTagViewSet)
 
 urlpatterns = [
     path('__debug__', include(debug_toolbar.urls)),
