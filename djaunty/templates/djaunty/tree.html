@@ -1,3 +1,26 @@
 {% extends "djaunty/base.html" %}
+{% load static %}
 
-{% block title %} Full text search {% endblock %}
+{% block title %} Dynamic hierarchy {% endblock %}
+
+{% block content %}
+    <div id="facetForm">
+        <select id="facet">
+            {% for attribute in attributes %}
+                <option value={{ attribute }}>{{ attribute }}</option>
+            {% endfor %}
+        </select>
+        <button id="createFacet">Add facet</button>
+    </div>
+    <h2 id="facetsList"></h2>
+    <ul id="tree">
+        <li class="root leaf" data-level="0" data-query="">
+            <span>
+                /datasets/
+                <span class="count"></span>
+            </span>
+        </li>
+    </ul>
+    {{ attributes|json_script:"attributes" }}
+    <script src="{% static "djaunty/tree.js" %}" type="text/javascript"></script>
+{% endblock %}

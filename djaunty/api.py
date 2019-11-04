@@ -46,7 +46,6 @@ class DatasetViewSet(viewsets.ModelViewSet):
     serializer_class = DatasetSerializer
     pagination_class = DatasetPagination
     filter_backends = (DjangoFilterBackend,)
-    # filter_fields = ('genotype',)
     filterset_class = DatasetFilter
 
     def create(self, request, *args, **kwargs):
@@ -132,7 +131,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
             return Response('Invalid column argument', 400)
 
         qs = Dataset.objects.filter(self.request.data).annotate(facet=column)
-        values = qs.values('facet').annotate(count=Count('facet')).order_by('-count')
+        values = qs.values('facet').annotate(count=Count('facet')).filter(count__gt=0).order_by('-count')
         page = self.paginate_queryset(values)
         return self.get_paginated_response(page)
 

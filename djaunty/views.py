@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 from .forms import SearchForm, TextSearchForm
 from .models import Dataset
+from .search_parser import SearchParser
 from .serializers import DatasetSerializer
 
 
@@ -52,4 +53,6 @@ def search(request):
 
 
 def tree(request):
-    return render(request, 'djaunty/tree.html', {})
+    return render(request, 'djaunty/tree.html', {
+        'attributes': SearchParser.attributes
+    })
