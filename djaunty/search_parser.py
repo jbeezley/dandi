@@ -46,6 +46,8 @@ class BaseParser:
             t.value = 'keywords__keyword'
         elif t.value == 'electrodes':
             t.value = 'number_of_electrodes'
+        elif t.value == 'units':
+            t.value = 'number_of_units'
         return t
 
     def t_error(self, t):
