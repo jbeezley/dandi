@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 from djaunty.api import DatasetViewSet
-from djaunty.views import search, text_search, tree
+from djaunty.views import dataset, search, text_search, tree
 
 from rest_framework import routers
 
@@ -32,6 +32,7 @@ urlpatterns = [
     path('text/', text_search),
     path('search/', search),
     path('tree/', tree),
+    path('datasets/<int:id>/', dataset),
     path('api/', include(router.urls)),
     path('admin/', admin.site.urls),
 ]

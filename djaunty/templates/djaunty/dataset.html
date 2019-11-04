@@ -1,0 +1,8 @@
+{% extends "djaunty/base.html" %}
+
+{% block title %} Dataset #{{ dataset.id }} {% endblock %}
+
+{% block content %}
+{% load pretty_json %}
+{{ dataset | pretty_json | safe }}
+{% endblock %}

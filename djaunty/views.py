@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 
 from .forms import SearchForm, TextSearchForm
 from .models import Dataset
@@ -55,4 +55,11 @@ def search(request):
 def tree(request):
     return render(request, 'djaunty/tree.html', {
         'attributes': SearchParser.attributes
+    })
+
+
+def dataset(request, id):
+    dataset = DatasetSerializer(get_object_or_404(Dataset, pk=id)).data
+    return render(request, 'djaunty/dataset.html', {
+        'dataset': dataset
     })

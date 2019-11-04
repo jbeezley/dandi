@@ -57,7 +57,7 @@
         $el.addClass('leaf');
 
         $el.find('.count').text(`(${data.count})`);
-        let items = data.results.map(result => `<li>${result.path}</li>`).join('');
+        let items = data.results.map(result => `<li><a href="/datasets/${result.id}/" target="_blank">${result.path}</a></li>`).join('');
         const remain = data.count - data.results.length;
         if (remain > 0) {
             items = items + `<li>... + ${remain} more</li>`;
@@ -80,8 +80,10 @@
         const $el = $(el);
         const query = $el.data('query').trim();
         const level = parseInt($el.data('level'), 10);
+        const spinner = $('<div class="spinner"></div>').appendTo(el);
 
         const data = await fetchFacets(query, facet);
+        spinner.remove();
         const remain = data.count - data.results.length;
 
         $el.find('.count').text(`(${data.count})`);
@@ -93,7 +95,7 @@
             return `
                 <li class="folder" data-level="${level + 1}" data-query="${subQuery}">
                     <span>
-                        <a href="#">${result.facet}/</a>
+                        <a class="node" href="#">${result.facet}/</a>
                         <span class="count">(${result.count})</span>
                     </span>
                 </li>`
@@ -107,7 +109,9 @@
     async function expandLeaf(el) {
         const $el = $(el);
         const query = $el.data('query');
+        const spinner = $('<div class="spinner"></div>').appendTo(el);
         const data = await fetchLeaf(query);
+        spinner.remove();
         fillLeaf(el, data);
     }
 
@@ -119,6 +123,6 @@
     fillLeaf($('.root')[0], data);
 
     $('#createFacet').click(createFacet);
-    $('#tree').on('click', 'a', clickLink);
+    $('#tree').on('click', 'a.node', clickLink);
 
 })()
