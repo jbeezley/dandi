@@ -5,7 +5,7 @@ from .models import Dataset
 from .serializers import DatasetSerializer
 
 
-def search(request):
+def text_search(request):
     total = 0
     results = None
     if request.method == 'POST':
@@ -19,15 +19,16 @@ def search(request):
         form = TextSearchForm()
 
     context = {
+        'title': 'Full text search',
         'form': form.as_table(),
         'results': results,
-        'action': 'search',
+        'action': 'text',
         'total': total
     }
-    return render(request, 'search.html', context)
+    return render(request, 'djaunty/search.html', context)
 
 
-def filter(request):
+def search(request):
     total = 0
     results = None
     if request.method == 'POST':
@@ -41,9 +42,14 @@ def filter(request):
         form = SearchForm()
 
     context = {
+        'title': 'search',
         'form': form.as_table(),
         'results': results,
-        'action': 'filter',
+        'action': 'search',
         'total': total
     }
-    return render(request, 'search.html', context)
+    return render(request, 'djaunty/search.html', context)
+
+
+def tree(request):
+    return render(request, 'djaunty/tree.html', {})
