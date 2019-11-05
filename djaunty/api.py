@@ -1,20 +1,15 @@
 from django.db.models import Count
 
-from django_filters.rest_framework import DjangoFilterBackend
-
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ParseError
+from rest_framework.filters import OrderingFilter
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.parsers import BaseParser
 from rest_framework.response import Response
 
-from .filters import DatasetFilter
+from .filters import ComplexSearchFilter, TextSearchFilter
 from .models import DataTag, Dataset, Keyword, Publication
-from .search_parser import FacetParser, ParserException, SearchParser
-from .serializers import DataTagSerializer, DatasetSerializer
-
-facet_parser = FacetParser()
+from .serializers import DataTagListSerializer, DataTagSerializer, \
+    DatasetFacetSerializer, DatasetSerializer
 
 
 class DatasetPagination(PageNumberPagination):
@@ -23,30 +18,11 @@ class DatasetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
 
 
-class PlainTextParser(BaseParser):
-    media_type = 'text/plain'
-
-    def parse(self, stream, media_type=None, parser_context=None):
-        return stream.read().decode()
-
-
-class SearchStringParser(PlainTextParser):
-    search_parser = SearchParser()
-
-    def parse(self, stream, media_type=None, parser_context=None):
-        text = super().parse(stream, media_type, parser_context)
-        try:
-            return self.search_parser.parse(text)
-        except ParserException as e:
-            raise ParseError(str(e))
-
-
 class DatasetViewSet(viewsets.ModelViewSet):
     queryset = Dataset.objects.all().order_by('id')
     serializer_class = DatasetSerializer
     pagination_class = DatasetPagination
-    filter_backends = (DjangoFilterBackend,)
-    filterset_class = DatasetFilter
+    filter_backends = [TextSearchFilter, ComplexSearchFilter, OrderingFilter]
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -112,33 +88,21 @@ class DatasetViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=False, methods=['POST'], parser_classes=[SearchStringParser])
-    def filter(self, request, *args, **kwargs):
-        # TODO: add sort parameters
-        queryset = Dataset.objects.filter(self.request.data)
-        page = self.paginate_queryset(queryset)
-        serializer = self.get_serializer(page, many=True)
-        return self.get_paginated_response(serializer.data)
-
-    @action(detail=False, methods=['POST'], schema=None, parser_classes=[SearchStringParser])
+    @action(detail=False, methods=['POST'])
     def facet(self, request, *args, **kwargs):
-        if 'column' not in request.query_params:
-            return Response('column query argument is required', 400)
+        serializer = DatasetFacetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
 
-        try:
-            column = facet_parser.parse(request.query_params['column'])
-        except ParserException:
-            return Response('Invalid column argument', 400)
+        qs = Dataset.objects  # TODO: where does the default queryset come in?
 
-        qs = Dataset.objects.filter(self.request.data).annotate(facet=column)
+        if 'query' in data:
+            qs = qs.filter(data['query'])
+
+        qs = qs.annotate(facet=data['facet'])
+
         values = qs.values('facet').annotate(count=Count('facet')).filter(count__gt=0).order_by('-count')
         page = self.paginate_queryset(values)
-        return self.get_paginated_response(page)
-
-    @action(detail=False, methods=['POST'], schema=None, parser_classes=[PlainTextParser])
-    def search(self, request, *args, **kwargs):
-        qs = Dataset.objects.filter(search_vector=self.request.data)
-        page = self.paginate_queryset(qs)
         return self.get_paginated_response(page)
 
 
@@ -146,3 +110,9 @@ class DataTagViewSet(viewsets.ModelViewSet):
     queryset = DataTag.objects.all().order_by('id')
     serializer_class = DataTagSerializer
     pagination_class = DatasetPagination
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return DataTagListSerializer
+
+        return DataTagSerializer

@@ -1,36 +1,26 @@
-from django_filters import rest_framework as filters
+from rest_framework import exceptions, filters
 
-from .models import Dataset, Keyword, Publication
+from .search_parser import ParserException, SearchParser
 
 
-class DatasetFilter(filters.FilterSet):
-    # Limit the results sent back for the filtering form...
-    # Ideally this, but it is slow:
-    # publication_qs = Publication.objects \
-    #     .annotate(Count('datasets')).order_by('-datasets__count', 'doi')[:100]
-    publication_qs = Publication.objects.all().order_by('doi')[:100]
-    related_publications = filters.ModelChoiceFilter(queryset=publication_qs)
+class TextSearchFilter(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        search = request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(search_vector=search)
+        return queryset
 
-    # keyword_qs = Keyword.objects \
-    #     .annotate(Count('datasets')).order_by('-datasets__count', 'keyword')[:100]
-    keyword_qs = Keyword.objects.all().order_by('keyword')[:100]
-    keywords = filters.ModelChoiceFilter(queryset=keyword_qs)
 
-    class Meta:
-        model = Dataset
-        fields = [
-            'genotype',
-            'subject_id',
-            'age',
-            'number_of_electrodes',
-            'lab',
-            'session_start_time',
-            'experimenter',
-            'session_id',
-            'species',
-            'identifier',
-            'session_description',
-            'institution',
-            'number_of_units',
-            'nwb_version',
-        ]
+class ComplexSearchFilter(filters.BaseFilterBackend):
+
+    def filter_queryset(self, request, queryset, view):
+        parser = SearchParser()
+        query = request.query_params.get('query')
+        if query:
+            try:
+                filter = parser.parse(query)
+            except ParserException as e:
+                detail = f'Invalid query: {e}'
+                raise exceptions.ValidationError(detail=detail)
+            queryset = queryset.filter(filter)
+        return queryset

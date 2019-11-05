@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.postgres',
     'django.contrib.staticfiles',
-    'django_filters',
     'djaunty',
     'rest_framework',
     'debug_toolbar',

@@ -1,5 +1,4 @@
 django
-django-filter
 djangorestframework
 factory-boy
 faker
