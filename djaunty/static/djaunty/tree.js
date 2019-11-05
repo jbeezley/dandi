@@ -17,24 +17,29 @@
     }
 
     async function fetchFacets(query, facet) {
-        const resp = await fetch(`/api/datasets/facet/?column=${facet}`, {
+        const data = {
+            facet: facet
+        };
+        if (query) {
+            data['query'] = query;
+        }
+        const resp = await fetch(`/api/datasets/facet/`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'text/plain',
+                'Content-Type': 'application/json',
             },
-            body: query || ' ',
+            body: JSON.stringify(data)
         })
         return resp.json();
     }
 
     async function fetchLeaf(query) {
-        const resp = await fetch(`/api/datasets/filter/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain',
-            },
-            body: query || ' ',
-        })
+        let params = '';
+        if (query) {
+            params = '?' + $.param({query: query});
+        }
+
+        const resp = await fetch(`/api/datasets/${params}`)
         return resp.json();
     }
 

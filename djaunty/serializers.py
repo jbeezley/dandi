@@ -50,10 +50,11 @@ class DatasetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dataset
         fields = [
-            'created', 'updated', 'related_publications', 'keywords', 'path', 'size',
-            'genotype', 'subject_id', 'age', 'number_of_electrodes', 'lab',
-            'session_start_time', 'experimenter', 'session_id', 'species',
-            'identifier', 'session_description', 'institution', 'number_of_units',
+            'id', 'created', 'updated', 'related_publications', 'keywords',
+            'path', 'size', 'genotype', 'subject_id', 'age',
+            'number_of_electrodes', 'lab', 'session_start_time',
+            'experimenter', 'session_id', 'species', 'identifier',
+            'session_description', 'institution', 'number_of_units',
             'nwb_version'
         ]
 
