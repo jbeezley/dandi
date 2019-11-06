@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import DataTag, Dataset
+from .models import DataTag, Dataset, Keyword, Publication
 from .search_parser import FacetParser, ParserException, SearchParser
 
 
@@ -41,9 +41,9 @@ class FacetField(serializers.CharField):
 
 class DatasetSerializer(serializers.ModelSerializer):
     related_publications = serializers.SlugRelatedField(
-        many=True, slug_field='doi', read_only=True)
+        many=True, slug_field='doi', read_only=False, queryset=Keyword.objects.all())
     keywords = serializers.SlugRelatedField(
-        many=True, slug_field='keyword', read_only=True)
+        many=True, slug_field='keyword', read_only=False, queryset=Publication.objects.all())
 
     age = AgeField(required=False)
 
@@ -57,6 +57,24 @@ class DatasetSerializer(serializers.ModelSerializer):
             'session_description', 'institution', 'number_of_units',
             'nwb_version'
         ]
+
+    def to_internal_value(self, data):
+        keywords = []
+        publications = []
+
+        for keyword in data.pop('keywords', []):
+            keywords.append(
+                Keyword.objects.get_or_create(keyword=keyword)[0]
+            )
+        data['keywords'] = keywords
+
+        for doi in data.pop('related_publications', []):
+            publications.append(
+                Publication.objects.get_or_create(doi=doi)[0]
+            )
+        data['related_publications'] = publications
+
+        return data
 
 
 class DatasetFacetSerializer(serializers.Serializer):
