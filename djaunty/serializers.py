@@ -5,8 +5,13 @@ from .search_parser import FacetParser, ParserException, SearchParser
 
 
 class AgeField(serializers.DurationField):
-    def to_internal_value(self, data):
-        return super().to_internal_value(data.replace('days ', ''))
+    def get_value(self, data):
+        data = super().get_value(data)
+        if data and data != serializers.empty:
+            data = data.replace('days ', '')
+            if data.lower() == 'none':
+                data = serializers.empty
+        return data
 
 
 class QueryField(serializers.CharField):
@@ -41,11 +46,11 @@ class FacetField(serializers.CharField):
 
 class DatasetSerializer(serializers.ModelSerializer):
     related_publications = serializers.SlugRelatedField(
-        many=True, slug_field='doi', read_only=False, queryset=Keyword.objects.all())
+        many=True, slug_field='doi', read_only=False, queryset=Publication.objects.all())
     keywords = serializers.SlugRelatedField(
-        many=True, slug_field='keyword', read_only=False, queryset=Publication.objects.all())
+        many=True, slug_field='keyword', read_only=False, queryset=Keyword.objects.all())
 
-    age = AgeField(required=False)
+    age = AgeField(required=False, allow_null=True)
 
     class Meta:
         model = Dataset
@@ -54,7 +59,7 @@ class DatasetSerializer(serializers.ModelSerializer):
             'path', 'size', 'genotype', 'subject_id', 'age',
             'number_of_electrodes', 'lab', 'session_start_time',
             'experimenter', 'session_id', 'species', 'identifier',
-            'session_description', 'institution', 'number_of_units', 'sex',
+            'session_description', 'institution', 'number_of_units',
             'experiment_description', 'date_of_birth', 'nwb_version'
         ]
 
@@ -66,12 +71,17 @@ class DatasetSerializer(serializers.ModelSerializer):
             keywords.append(
                 Keyword.objects.get_or_create(keyword=keyword)[0]
             )
-        data['keywords'] = keywords
 
         for doi in data.pop('related_publications', []):
             publications.append(
                 Publication.objects.get_or_create(doi=doi)[0]
             )
+
+        data['keywords'] = []
+        data['related_publications'] = []
+        data = super().to_internal_value(data)
+
+        data['keywords'] = keywords
         data['related_publications'] = publications
 
         return data

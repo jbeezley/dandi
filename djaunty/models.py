@@ -49,7 +49,6 @@ class Dataset(models.Model):
     experiment_description = models.CharField(max_length=1023, null=True)
     institution = models.CharField(max_length=MAX_CHAR_LENGTH, null=True)
     number_of_units = models.IntegerField(null=True)
-    sex = models.CharField(max_length=1, null=True, choices=[('M', 'Male'), ('F', 'Female')])
     nwb_version = models.CharField(max_length=MAX_CHAR_LENGTH, null=True)
 
     search_vector = SearchVectorField(null=True, editable=False)
