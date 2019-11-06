@@ -37,6 +37,7 @@ class Dataset(models.Model):
     genotype = models.CharField(max_length=MAX_CHAR_LENGTH, null=True)
     subject_id = models.CharField(max_length=MAX_CHAR_LENGTH, null=True)
     age = models.DurationField(null=True)
+    date_of_birth = models.DateTimeField(null=True)
     number_of_electrodes = models.IntegerField(null=True)
     lab = models.CharField(max_length=MAX_CHAR_LENGTH, null=True)
     session_start_time = models.DateField(null=True)
@@ -45,8 +46,10 @@ class Dataset(models.Model):
     species = models.CharField(max_length=MAX_CHAR_LENGTH, null=True)
     identifier = models.CharField(max_length=MAX_CHAR_LENGTH, null=True)
     session_description = models.CharField(max_length=1023, null=True)
+    experiment_description = models.CharField(max_length=1023, null=True)
     institution = models.CharField(max_length=MAX_CHAR_LENGTH, null=True)
     number_of_units = models.IntegerField(null=True)
+    sex = models.CharField(max_length=1, null=True, choices=[('M', 'Male'), ('F', 'Female')])
     nwb_version = models.CharField(max_length=MAX_CHAR_LENGTH, null=True)
 
     search_vector = SearchVectorField(null=True, editable=False)

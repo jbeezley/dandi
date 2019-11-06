@@ -54,8 +54,8 @@ class DatasetSerializer(serializers.ModelSerializer):
             'path', 'size', 'genotype', 'subject_id', 'age',
             'number_of_electrodes', 'lab', 'session_start_time',
             'experimenter', 'session_id', 'species', 'identifier',
-            'session_description', 'institution', 'number_of_units',
-            'nwb_version'
+            'session_description', 'institution', 'number_of_units', 'sex',
+            'experiment_description', 'date_of_birth', 'nwb_version'
         ]
 
     def to_internal_value(self, data):
