@@ -63,14 +63,18 @@
         $el.addClass('leaf');
 
         $el.find('.count').text(`(${data.count})`);
+        const items = filesItems(data);
+        $el.append(`<ul>${items}</ul>`);
+    }
+
+    function filesItems(data) {
         let items = data.results.map(result => `<li><a href="/datasets/${result.id}/" target="_blank">${result.path}</a></li>`).join('');
         const remain = data.count - data.results.length;
         if (remain > 0) {
             items = items + `<li>... + ${remain} more</li>`;
         }
-        $el.append(`<ul>${items}</ul>`);
+        return items;
     }
-
 
     async function replaceLeafWithFacet(el, facet) {
         const $el = $(el);
@@ -92,7 +96,6 @@
         spinner.remove();
         const remain = data.count - data.results.length;
 
-        $el.find('.count').text(`(${data.count})`);
         let items = data.results.map(result => {
             let subQuery = `${facet} = '${result.facet}'`;
             if (query.length) {
@@ -109,6 +112,16 @@
         if (remain > 0) {
             items = items + `<li>... + ${remain} more</li>`;
         }
+
+        let subQuery = `${facet} = null`;
+        if (query) {
+            subQuery = query + ' and ' + subQuery;
+        }
+        const filesData = await fetchLeaf(subQuery);
+
+        items = items + filesItems(filesData);
+
+        $el.find('.count').text(`(${data.count + filesData.count})`);
         $el.append('<ul>' + items + '</ul>');
     }
 
@@ -120,9 +133,6 @@
         spinner.remove();
         fillLeaf(el, data);
     }
-
-    window.fetchFacets = fetchFacets;
-    window.fetchLeaf = fetchLeaf;
 
     const resp = await fetch('/api/datasets/');
     const data = await resp.json();

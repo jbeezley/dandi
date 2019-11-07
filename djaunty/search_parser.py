@@ -85,10 +85,12 @@ class SearchParser(BaseParser):
         'STRING',
         'INTEGER',
 
-        'NOT'
+        'NOT',
+        'NULL'
     ] + list(binary_operators.values())
 
     t_NOT = r'not'
+    t_NULL = r'null'
 
     # for the parser
     precedence = [
@@ -179,6 +181,12 @@ class SearchParser(BaseParser):
         if op == '!=':
             q.negate()
         p[0] = q
+
+    def p_rule_is_null(self, p):
+        '''rule : ATTRIBUTE EQUAL NULL'''
+        key = p[1] + '__isnull'
+        kwargs = dict([(key, True)])
+        p[0] = Q(**kwargs)
 
     def p_rule_in(self, p):
         "rule : ATTRIBUTE IN '[' list ']'"
