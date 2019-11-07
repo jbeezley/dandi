@@ -27,6 +27,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': window.csrfToken
             },
             body: JSON.stringify(data)
         })

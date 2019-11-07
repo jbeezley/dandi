@@ -21,6 +21,12 @@
             </span>
         </li>
     </ul>
+    <form style="display:none"> <!-- inject csrf token -->
+        {% csrf_token %}
+    </form>
+    <script type="text/javascript">
+        window.csrfToken = $('[name="csrfmiddlewaretoken"]').val();
+    </script>
     {{ attributes|json_script:"attributes" }}
     <script src="{% static "djaunty/tree.js" %}" type="text/javascript"></script>
 {% endblock %}
