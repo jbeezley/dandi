@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
             ON djaunty_dataset FOR EACH ROW EXECUTE PROCEDURE djaunty_text_search_update();
 
         -- Force trigger to run on all rows
-        UPDATE djaunty_dataset SET id = id;
+        -- UPDATE djaunty_dataset SET id = id;
     """
 
     reverse_migration = """
