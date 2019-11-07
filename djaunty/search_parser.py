@@ -191,7 +191,7 @@ class SearchParser(BaseParser):
     def p_rule_in(self, p):
         "rule : ATTRIBUTE IN '[' list ']'"
         key = p[1] + '__in'
-        value = p[3]
+        value = p[4]
         kwargs = dict([(key, value)])
         p[0] = Q(**kwargs)
 
